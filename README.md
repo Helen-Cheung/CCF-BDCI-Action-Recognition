@@ -48,3 +48,72 @@ data.npy文件通过np.load()读取后，会得到一个形状为N×C×T×V×M�
 A榜测试集：[下载](https://aistudio.baidu.com/aistudio/datasetdetail/104924)
 
 B榜测试集：[下载](https://aistudio.baidu.com/aistudio/datasetdetail/117870)
+
+
+## 数据预处理
+
+首先拆分数据集，使用jikuai库里面的npysplit，拆分后存盘到用户根目录。
+
+```
+from jikuai.dataset import npysplit
+import numpy as np
+npysplit("data/data104925/train_data.npy", "data/data104925/train_label.npy", 0.8)
+```
+
+## 模型选择
+ST-GCN、AGCN(AAGCN)、MS-G3D、PoseC3D
+### GCN
+GCN步骤（假设图输入为X），可以视为
+
+* 对图输入X(X表示图每个节点的特征)进行特征提取（假设参数为W），输出XW。微观来看，这个特征提取可以理解为对图上每个节点的特征进行了分别提取，其特征维度从[公式]变化到[公式]；
+* 根据图结构中建立一个邻接矩阵A，并对其进行归一化or对称归一化，获得A；
+* 利用归一化的邻接矩阵A对提取后的特征XW进行聚合，聚合的结果为AXW。
+这样一来，基本的图卷积运算就实现了。其具体的实现代码如下所示：
+
+```
+class GraphConvolution(nn.Module):
+    def __init__(self, input_dim, output_dim, use_bias=True):
+        """图卷积：L*X*\theta
+        Args:
+        ----------
+            input_dim: int
+                节点输入特征的维度
+            output_dim: int
+                输出特征维度
+            use_bias : bool, optional
+                是否使用偏置
+        """
+        super(GraphConvolution, self).__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.use_bias = use_bias
+        self.weight = nn.Parameter(torch.Tensor(input_dim, output_dim))
+        if self.use_bias:
+            self.bias = nn.Parameter(torch.Tensor(output_dim))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        init.kaiming_uniform_(self.weight)
+        if self.use_bias:
+            init.zeros_(self.bias)
+
+    def forward(self, adjacency, input_feature):
+        """邻接矩阵是稀疏矩阵，因此在计算时使用稀疏矩阵乘法
+    
+        Args: 
+        -------
+            adjacency: torch.sparse.FloatTensor
+                邻接矩阵
+            input_feature: torch.Tensor
+                输入特征
+        """
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        support = torch.mm(input_feature, self.weight.to(device))
+        output = torch.sparse.mm(adjacency, support)
+        if self.use_bias:
+            output += self.bias.to(device)
+        return output
+```
+
