@@ -49,3 +49,45 @@ A = np.stack(A)
 * 步骤3：利用TCN网络（实际上是一种普通的CNN，在时间维度的kernel size>1）实现时间维度信息的聚合。
 * 步骤4：引入了残差结构（一个CNN+BN）计算获得Res，与TCN的输出按位相加
 
+
+## AGCN
+AGCN论文中总结了ST-GCN模型的大致缺点: 其骨架图是根据人体关节连接预定义好的，无法修改 。
+改进方案：提出了一种自适应的图神经网络，也就是引入了两个额外的参数化（可学习）的邻接矩阵，这两个矩阵分别用来（1）学习所有数据中的共同模式（也就是所有数据中统一的共性关注点）；（2）学习单个数据中独有的模式（也就是每个数据中独有的关注点）；
+
+![image](https://user-images.githubusercontent.com/62683546/155316320-bdc25ff4-6afd-42ae-b6f4-e5018c73b7b3.png)
+
+* 邻接矩阵由三个矩阵组成：Ak,Bk,Ck
+* Ak为最基本的邻接矩阵
+* Bk与STGCN中的Learnable edge importance weight相似,是一个参数化的NXN的矩阵,被设计来学习所有数据中的共同模式（也就是所有数据中统一的共性关注点）。
+* Ck来学习单个数据中独有的模式（也就是每个数据中独有的关注点）,获取过程类似于视觉注意力中的Non-local
+* 最后Ak、Bk、Ck按位相加获得邻接矩阵
+* 之后的结构与ST-GCN基本一致
+
+## MS-G3D
+MS-G3D论文主要改进了GCN+TCN的时空处理结构，GCN+TCN范式中存在效率不高的时空信息流动方式。
+
+![image](https://user-images.githubusercontent.com/62683546/155319752-e18d8590-6a57-48d0-8787-d4ce81b9c441.png)
+
+为此，MS-G3D提出了MS-G3D模块，同步提取不同空间尺度、不同时间跨度的时空信息：
+
+![image](https://user-images.githubusercontent.com/62683546/155318697-6a177262-b2c8-4940-abc0-d017f02a85cf.png)
+
+通过将标准化的子邻接矩阵A重复了NXN次获得维度为tNxtN的新邻接矩阵，子邻接矩阵表示当前节点与距其距离1的t帧内所有节点的连接关系，其中t为时间窗大小，即每个时间窗包含t帧的骨骼数据。
+
+网络的整体结构为：
+
+![image](https://user-images.githubusercontent.com/62683546/155319940-5fd265be-7e26-4118-a123-027e253dc75a.png)
+
+## PoseC3D
+一种基于 3D-CNN 的骨骼动作识别方法
+
+GCN 方法的 3 点缺陷：
+* 鲁棒性： 输入的扰动容易对 GCN 造成较大影响，使其难以处理关键点缺失或训练测试时使用骨骼数据存在分布差异（例如出自不同姿态提取器）等情形。
+* 兼容性： GCN 使用图序列表示骨架序列，这一表示很难与其他基于 3D-CNN 的模态（RGB, Flow 等）进行特征融合。
+* 可扩展性：GCN 所需计算量随视频中人数线性增长，很难被用于群体动作识别等应用。
+
+PoseC3D整体框架：
+
+![image](https://user-images.githubusercontent.com/62683546/155320490-df376965-2f86-44db-a8f5-476f82b46869.png)
+
+
