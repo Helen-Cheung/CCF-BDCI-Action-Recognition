@@ -39,7 +39,7 @@ A = np.stack(A)
 
 值得注意的是，hop类似于CNN中的kernel size。hop=0就是根节点自身，hop=1表示根节点与其距离等于1的邻接点们，也就是上图（a）的红色虚线框。
 
-![11111](https://user-images.githubusercontent.com/62683546/155315224-f82ae065-f4ab-4cc0-b39e-d79372f3ce24.png)
+![stgcn](https://user-images.githubusercontent.com/62683546/156147304-e98d82ef-d969-4a93-9bde-e098e9b43cc9.png)
 
 可以分为以下步骤：
 
@@ -54,7 +54,7 @@ A = np.stack(A)
 AGCN论文中总结了ST-GCN模型的大致缺点: 其骨架图是根据人体关节连接预定义好的，无法修改 。
 改进方案：提出了一种自适应的图神经网络，也就是引入了两个额外的参数化（可学习）的邻接矩阵，这两个矩阵分别用来（1）学习所有数据中的共同模式（也就是所有数据中统一的共性关注点）；（2）学习单个数据中独有的模式（也就是每个数据中独有的关注点）；
 
-![image](https://user-images.githubusercontent.com/62683546/155316320-bdc25ff4-6afd-42ae-b6f4-e5018c73b7b3.png)
+![AGCN](https://user-images.githubusercontent.com/62683546/156147217-20b0bfca-a092-4ecd-944d-c65e480cd16c.png)
 
 * 邻接矩阵由三个矩阵组成：Ak,Bk,Ck
 * Ak为最基本的邻接矩阵
@@ -76,7 +76,7 @@ MS-G3D论文主要改进了GCN+TCN的时空处理结构，GCN+TCN范式中存在
 
 网络的整体结构为：
 
-![image](https://user-images.githubusercontent.com/62683546/155319940-5fd265be-7e26-4118-a123-027e253dc75a.png)
+![MSG3D](https://user-images.githubusercontent.com/62683546/156147181-4441ef3b-df4c-4530-bec0-1a855c0b24ff.png)
 
 ## PoseC3D
 一种基于 3D-CNN 的骨骼动作识别方法
@@ -88,6 +88,7 @@ GCN 方法的 3 点缺陷：
 
 PoseC3D整体框架：
 
-![image](https://user-images.githubusercontent.com/62683546/155320490-df376965-2f86-44db-a8f5-476f82b46869.png)
+![PoseC3D](https://user-images.githubusercontent.com/62683546/156147138-b820a49d-5045-42ff-80ec-0e47697c62b8.png)
+
 
 
